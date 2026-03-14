@@ -1,23 +1,34 @@
-# 幼儿短视频/长视频行为分析 MVP
+# 幼儿短视频/长视频行为分析 MVP（Java 版）
 
-这个仓库提供一个最小可运行实现，覆盖你提出的两条路线：
+本仓库已重写为 **Java 实现**，用于演示两个核心能力：
 
-- **短视频**：将已有用户视频文本片段进行行为标签识别，生成儿童行为报告。
-- **长视频**：按全天事件流自动汇总，生成分析与工作总结草稿。
+- **短视频**：对已提取的文本片段进行行为标签识别，并生成儿童行为报告。
+- **长视频**：对全天行为事件进行自动汇总，生成工作总结草稿。
 
-## 快速运行
+> 当前仍是规则引擎 MVP，输入是“文本片段/事件数据”，不是直接读取视频文件。
+
+## 技术栈
+
+- Java 17
+- 纯 Java 标准库（无第三方依赖）
+
+## 本地编译与测试（无 Maven 依赖）
 
 ```bash
-python -m app.cli --child-id child-001 --segments "认真听讲并举手" "活动后排队收纳"
-python -m app.cli --long-video
+mkdir -p out
+javac -encoding UTF-8 -d out $(find src/main/java src/test/java -name "*.java")
+java -cp out com.example.behavior.BehaviorAnalysisServiceTest
 ```
 
-## 结构
+## 运行 CLI
 
-- `app/analysis.py`：核心算法（标签、报告、全天汇总）
-- `app/cli.py`：命令行入口
-- `tests/test_analysis.py`：基础测试
+```bash
+java -cp out com.example.behavior.BehaviorCli --child-id child-001 --segments 认真听讲并举手 活动后排队收纳
+java -cp out com.example.behavior.BehaviorCli --long-video
+```
 
-## 说明
+## 目录结构
 
-当前为规则引擎 MVP：可解释、易迭代，适合先跑园所试点。后续可将 `tag_short_video` 替换为多模态模型推理结果，并复用报告汇总层。
+- `src/main/java/com/example/behavior/BehaviorAnalysisService.java`：核心分析逻辑
+- `src/main/java/com/example/behavior/BehaviorCli.java`：CLI 入口
+- `src/test/java/com/example/behavior/BehaviorAnalysisServiceTest.java`：测试入口
