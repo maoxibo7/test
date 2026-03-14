@@ -36,6 +36,14 @@ public class BehaviorAnalysisService {
         return scoredSegments;
     }
 
+    public Map<String, Object> analyzeVideoWithTranscript(String childId, VideoMetadata metadata, List<String> transcriptSegments) {
+        List<Map<String, Double>> taggedSegments = tagShortVideo(transcriptSegments, null);
+        Map<String, Object> report = buildChildBehaviorReport(childId, taggedSegments);
+        report.put("videoMetadata", metadata);
+        report.put("inputMode", "video+transcript");
+        return report;
+    }
+
     public Map<String, Object> buildChildBehaviorReport(String childId, List<Map<String, Double>> taggedSegments) {
         Map<String, Integer> observedTags = new HashMap<>();
         Map<String, List<Double>> tagScores = new HashMap<>();
