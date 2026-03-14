@@ -17,6 +17,7 @@ public class BehaviorAnalysisServiceTest {
         test.shortVideoTaggingAndReportShouldWork();
         test.longVideoSummaryShouldWork();
         test.videoTranscriptPipelineShouldWork();
+        test.qwenVideoUrlPipelineShouldBuildAndParse();
         System.out.println("ALL_TESTS_PASSED");
     }
 
@@ -81,6 +82,28 @@ public class BehaviorAnalysisServiceTest {
         assertTrue("video+transcript".equals(report.get("inputMode")), "inputMode mismatch");
         assertTrue(((Integer) report.get("totalSegments")) == 2, "totalSegments mismatch");
         assertTrue(report.get("videoMetadata") instanceof VideoMetadata, "videoMetadata missing");
+    }
+
+    void qwenVideoUrlPipelineShouldBuildAndParse() throws IOException {
+        HttpTransport fakeTransport = (url, headers, body) -> {
+            assertTrue(url.contains("dashscope.aliyuncs.com"), "endpoint mismatch");
+            assertTrue(headers.get("Authorization").startsWith("Bearer "), "missing auth");
+            assertTrue(body.contains("qwen3-vl-plus"), "model missing");
+            assertTrue(body.contains("video_url"), "video content type missing");
+            assertTrue(body.contains("https://example.com/demo.mp4"), "video url missing");
+            return "{" +
+                    "\"choices\":[{" +
+                    "\"message\":{" +
+                    "\"content\":\"{\\\"tags\\\":[\\\"专注学习\\\",\\\"积极互动\\\"],\\\"report\\\":\\\"孩子在活动中专注并积极互动。\\\"}\"" +
+                    "}}]}";
+        };
+
+        QwenVideoAnalyzer analyzer = new QwenVideoAnalyzer(fakeTransport, "test-api-key");
+        AiVideoAnalysisResult result = analyzer.analyzeVideoUrl("https://example.com/demo.mp4");
+
+        assertTrue(result.tags().size() == 2, "tags size mismatch");
+        assertTrue(result.tags().contains("专注学习"), "tag content mismatch");
+        assertTrue(result.report().contains("积极互动"), "report content mismatch");
     }
 
     private void assertTrue(boolean condition, String message) {
